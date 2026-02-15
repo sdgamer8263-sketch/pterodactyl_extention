@@ -1,29 +1,15 @@
-#!/bin/bash
+cd /var/www/pterodactyl && \
 
-# Panel directory তে যাও
-cd /var/www/pterodactyl || exit 1
+apt update -y && apt install git unzip -y && \
 
-# আপডেট আর প্রয়োজনীয় প্যাকেজ ইনস্টল
-apt update -y
-apt install git unzip -y
+git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention.git temp_ext && \
 
-# GitHub থেকে এক্সটেনশন ক্লোন করো
-git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention.git temp_ext
+cp -r temp_ext/* . && rm -rf temp_ext && \
 
-# এক্সটেনশন ফাইলগুলো প্যানেলে কপি করো
-cp -r temp_ext/* .
+chown -R www-data:www-data /var/www/pterodactyl && \
 
-# অস্থায়ী ফোল্ডার মুছে ফেলো
-rm -rf temp_ext
+chmod -R 755 /var/www/pterodactyl && \
 
-# ক্যাশ ক্লিয়ার আর মাইগ্রেশন
-php artisan migrate --force
-php artisan optimize:clear
+php artisan migrate --force && php artisan optimize:clear && systemctl restart nginx
 
-# পারমিশন ঠিক করো
-chown -R www-data:www-data /var/www/pterodactyl
-
-# Nginx রিস্টার্ট করো
-systemctl restart nginx
-
-echo "Installation complete!"
+echo "Installation complete! Ab flex karo 😎"
