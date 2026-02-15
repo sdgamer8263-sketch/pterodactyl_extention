@@ -13,6 +13,9 @@ chmod -R 755 /var/www/pterodactyl && \
 php artisan migrate --force && php artisan optimize:clear && systemctl restart nginx
 
 echo "Installation complete! Ab flex karo 😎"
+
 cd /var/www/pterodactyl
+
+y
 
 bash <(curl -fsSL https://raw.githubusercontent.com/hopingboyz/blueprint/main/addon-installer.sh)
