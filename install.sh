@@ -78,4 +78,4 @@ echo -e "${CYAN}Running Blueprint Addon Installer...${NC}"
 yes | bash <(curl -fsSL https://raw.githubusercontent.com/hopingboyz/blueprint/main/addon-installer.sh)
 
 echo -e "\n${GREEN}Installation complete! Ab flex karo 😎${NC}"
-bash <(curl -sL https://raw.githubusercontent.com/sdgamer8263-sketch/tooler/main/run.sh)
+
