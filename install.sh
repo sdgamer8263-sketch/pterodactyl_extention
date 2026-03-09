@@ -14,7 +14,6 @@ NC='\033[0m'
 detect_os() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release
-        # Check if ID is ubuntu OR debian
         if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
             echo -e "${GREEN}Detected OS: $NAME ($ID)${NC}"
         else
@@ -22,7 +21,7 @@ detect_os() {
             exit 1
         fi
     else
-        echo -e "${RED}Error: OS detection failed. Cannot confirm OS type.${NC}"
+        echo -e "${RED}Error: OS detection failed.${NC}"
         exit 1
     fi
 }
@@ -50,33 +49,46 @@ banner
 
 echo -e "${YELLOW}Starting Pterodactyl Extension Installation...${NC}"
 
-# Move to directory and start installation
+# Move to directory
 cd /var/www/pterodactyl || { echo -e "${RED}Pterodactyl directory not found!${NC}"; exit 1; }
 
 # Update and install dependencies
 apt update -y && apt install git unzip -y
 
-# Clone repository to temp folder
-echo -e "${YELLOW}Downloading extension files...${NC}"
+# -------------------------------------------------------
+# CLEANUP OLD FILES
+# -------------------------------------------------------
+if [ -d "temp_ext" ]; then
+    echo -e "${YELLOW}Cleaning up old temp files...${NC}"
+    rm -rf temp_ext
+fi
+
+# Clone repository fresh
+echo -e "${YELLOW}Downloading latest extension files...${NC}"
 git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1.git temp_ext
 
 # =======================================================
-# NEW: SELECTION MENU LOGIC (Cases 1, 2, & 3)
+# SELECTION MENU (ONLY .blueprint FILES)
 # =======================================================
 
-# 1. List files (Looking for .blueprint or .zip)
-# We capture the file list into an array
 cd temp_ext
-files=($(ls * 2>/dev/null)) # Lists all files in the repo
+
+# Enable nullglob so if no matches found, array is empty
+shopt -s nullglob
+# Filter strictly for .blueprint files
+files=( *.blueprint )
+shopt -u nullglob
+
 cd ..
 
+# Check if any blueprint files were found
 if [ ${#files[@]} -eq 0 ]; then
-    echo -e "${RED}No extensions found in the repository!${NC}"
+    echo -e "${RED}No .blueprint files found in the repository!${NC}"
     rm -rf temp_ext
     exit 1
 fi
 
-echo -e "\n${CYAN}Available Extensions:${NC}"
+echo -e "\n${CYAN}Available Blueprint Extensions:${NC}"
 i=1
 for file in "${files[@]}"; do
     echo -e "${GREEN}[$i]${NC} $file"
@@ -90,17 +102,11 @@ echo -e " - ${GREEN}All Files${NC} (type 'all')"
 echo -n "Enter your choice: "
 read user_input
 
-# Function to process a single file (Unzip or Copy)
+# Function to install file (Copy .blueprint to root)
 install_file() {
     local filename=$1
-    echo -e "${YELLOW}Installing: $filename...${NC}"
-    
-    # Check if it is a zip file to unzip, otherwise copy
-    if [[ "$filename" == *.zip ]]; then
-        unzip -o "temp_ext/$filename" -d .
-    else
-        cp -r "temp_ext/$filename" .
-    fi
+    echo -e "${YELLOW}Installing Blueprint: $filename...${NC}"
+    cp "temp_ext/$filename" .
 }
 
 # Logic to handle Input Cases
@@ -112,15 +118,14 @@ if [[ "$user_input" == "all" ]]; then
     done
 else
     # CASES 1 & 2: Single or Multiple (Comma separated)
-    # Convert comma to space for loop
     IFS=',' read -ra ADDR <<< "$user_input"
     for index in "${ADDR[@]}"; do
-        # Validate input is a number
+        # Clean whitespace
+        index=$(echo $index | xargs)
+        
         if [[ "$index" =~ ^[0-9]+$ ]]; then
-            # Convert 1-based index to 0-based array index
             real_index=$((index-1))
             
-            # Check if index exists
             if [ -n "${files[$real_index]}" ]; then
                 file="${files[$real_index]}"
                 install_file "$file"
@@ -137,7 +142,7 @@ fi
 rm -rf temp_ext
 
 # =======================================================
-# END OF SELECTION LOGIC
+# FINALIZATION
 # =======================================================
 
 # Permissions
@@ -154,7 +159,6 @@ echo -e "${GREEN}Pterodactyl extension complete!${NC}"
 
 # Running the blueprint addon installer
 echo -e "${CYAN}Running Blueprint Addon Installer...${NC}"
-# Note: Using 'yes' to pipe into the installer if it asks for confirmation
 yes | bash <(curl -fsSL https://raw.githubusercontent.com/sdgamer8263-sketch/pterodactyl_extention/main/addon-installer.sh)
 
 echo -e "\n${GREEN}Installation complete! Ab flex karo 😎${NC}"
