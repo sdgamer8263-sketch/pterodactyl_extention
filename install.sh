@@ -65,10 +65,10 @@ fi
 
 # Clone repository fresh
 echo -e "${YELLOW}Downloading latest extension files...${NC}"
-git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1/main/ex.git temp_ext
+git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1/tree/main/ex.git temp_ext
 
 # =======================================================
-# SELECTION MENU (ONLY .blueprint FILES)
+#                  SELECTION MENU
 # =======================================================
 
 cd temp_ext
