@@ -1,7 +1,7 @@
-# =======================================
+# ======================================================================
 #   AUTHOR    : SDGAMER
-#   TOOL      : PTERODACTYL EXTRA BLUEPRINT EXTENTION INSTALLER
-# =======================================
+#   TOOL      : PTERODACTYL EXTRA BLUEPRINT EXTENTIONS INSTALLER
+# ======================================================================
 
 # ---------- COLORS ----------
 RED='\033[0;31m'
@@ -38,8 +38,8 @@ cat <<'EOF'
 ██████╔╝██████╔╝╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
 ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 EOF
-echo -e "${GREEN}      PTERODACTYL EXTRA BLUEPRINT EXTENTIONS INSTALLER (WITHOUT SFTP) ${NC}"
-echo "======================================================================================"
+echo -e "${GREEN}      PTERODACTYL EXTRA BLUEPRINT EXTENTION INSTALLER (WITHOUT SFTP) ${NC}"
+echo "======================================="
 echo
 }
 
@@ -63,46 +63,41 @@ if [ -d "temp_ext" ]; then
     rm -rf temp_ext
 fi
 
-# Clone repository fresh
-echo -e "${YELLOW}Downloading latest extension files...${NC}"
+# Clone NEW repository
+echo -e "${YELLOW}Downloading latest extension files from 'pterodactyl_extention1'...${NC}"
 git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1.git temp_ext
 
 # =======================================================
-#                SELECTION MENU 
+# SELECTION MENU (INSIDE 'ex' FOLDER)
 # =======================================================
 
-cd temp_ext
-
-# Check if 'ex' file exists
-if [ ! -f "ex" ]; then
-    echo -e "${RED}Error: 'ex' file list not found in repository!${NC}"
-    cd ..
+# Check if 'ex' folder exists
+if [ ! -d "temp_ext/ex" ]; then
+    echo -e "${RED}Error: 'ex' folder not found in repository!${NC}"
     rm -rf temp_ext
     exit 1
 fi
 
-# Read 'ex' file line by line into 'files' array
-# We use 'tr -d \r' to remove Windows carriage returns just in case
-mapfile -t files < <(tr -d '\r' < ex)
+# Go inside 'ex' folder to list files
+cd temp_ext/ex
 
-cd ..
+# Enable nullglob to avoid errors if empty
+shopt -s nullglob
+files=( *.blueprint )
+shopt -u nullglob
 
 # Check if list is empty
 if [ ${#files[@]} -eq 0 ]; then
-    echo -e "${RED}The 'ex' file list is empty!${NC}"
+    echo -e "${RED}No .blueprint files found inside 'ex' folder!${NC}"
+    cd ../..
     rm -rf temp_ext
     exit 1
 fi
 
-echo -e "\n${CYAN}Available Extensions (from list):${NC}"
+echo -e "\n${CYAN}Available Extensions (in 'ex' folder):${NC}"
 i=1
 for file in "${files[@]}"; do
-    # Only show if file actually exists to avoid errors later
-    if [ -f "temp_ext/$file" ]; then
-        echo -e "${GREEN}[$i]${NC} $file"
-    else
-        echo -e "${RED}[$i] $file (File missing in repo)${NC}"
-    fi
+    echo -e "${GREEN}[$i]${NC} $file"
     ((i++))
 done
 
@@ -116,19 +111,15 @@ read user_input
 # Function to install file
 install_file() {
     local filename=$1
-    
-    if [ -f "temp_ext/$filename" ]; then
-        echo -e "${YELLOW}Installing: $filename...${NC}"
-        cp "temp_ext/$filename" .
-    else
-        echo -e "${RED}Error: File '$filename' listed in 'ex' but not found in folder!${NC}"
-    fi
+    echo -e "${YELLOW}Installing: $filename...${NC}"
+    # Copy from current directory (temp_ext/ex) to Pterodactyl root (/var/www/pterodactyl)
+    cp "$filename" ../../
 }
 
 # Logic to handle Input Cases
 if [[ "$user_input" == "all" ]]; then
-    # CASE 3: Install ALL from list
-    echo -e "${GREEN}Installing ALL extensions from list...${NC}"
+    # CASE 3: Install ALL
+    echo -e "${GREEN}Installing ALL extensions...${NC}"
     for file in "${files[@]}"; do
         install_file "$file"
     done
@@ -154,7 +145,8 @@ else
     done
 fi
 
-# Clean up temp folder
+# Go back to root and cleanup
+cd ../..
 rm -rf temp_ext
 
 # =======================================================
@@ -178,3 +170,4 @@ echo -e "${CYAN}Running Blueprint Addon Installer...${NC}"
 yes | bash <(curl -fsSL https://raw.githubusercontent.com/sdgamer8263-sketch/pterodactyl_extention/main/addon-installer.sh)
 
 echo -e "\n${GREEN}Installation complete! Ab flex karo 😎${NC}"
+
