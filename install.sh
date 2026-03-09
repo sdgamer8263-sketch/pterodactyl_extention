@@ -65,33 +65,44 @@ fi
 
 # Clone repository fresh
 echo -e "${YELLOW}Downloading latest extension files...${NC}"
-git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1/tree/main/ex.git temp_ext
+git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1.git temp_ext
 
 # =======================================================
-#                  SELECTION MENU
+# SELECTION MENU (FROM 'ex' FILE LIST)
 # =======================================================
 
 cd temp_ext
 
-# Enable nullglob so if no matches found, array is empty
-shopt -s nullglob
-# Filter strictly for .blueprint files
-files=( *.blueprint )
-shopt -u nullglob
-
-cd ..
-
-# Check if any blueprint files were found
-if [ ${#files[@]} -eq 0 ]; then
-    echo -e "${RED}No .blueprint files found in the repository!${NC}"
+# Check if 'ex' file exists
+if [ ! -f "ex" ]; then
+    echo -e "${RED}Error: 'ex' file list not found in repository!${NC}"
+    cd ..
     rm -rf temp_ext
     exit 1
 fi
 
-echo -e "\n${CYAN}Available Blueprint Extensions:${NC}"
+# Read 'ex' file line by line into 'files' array
+# We use 'tr -d \r' to remove Windows carriage returns just in case
+mapfile -t files < <(tr -d '\r' < ex)
+
+cd ..
+
+# Check if list is empty
+if [ ${#files[@]} -eq 0 ]; then
+    echo -e "${RED}The 'ex' file list is empty!${NC}"
+    rm -rf temp_ext
+    exit 1
+fi
+
+echo -e "\n${CYAN}Available Extensions (from list):${NC}"
 i=1
 for file in "${files[@]}"; do
-    echo -e "${GREEN}[$i]${NC} $file"
+    # Only show if file actually exists to avoid errors later
+    if [ -f "temp_ext/$file" ]; then
+        echo -e "${GREEN}[$i]${NC} $file"
+    else
+        echo -e "${RED}[$i] $file (File missing in repo)${NC}"
+    fi
     ((i++))
 done
 
@@ -102,17 +113,22 @@ echo -e " - ${GREEN}All Files${NC} (type 'all')"
 echo -n "Enter your choice: "
 read user_input
 
-# Function to install file (Copy .blueprint to root)
+# Function to install file
 install_file() {
     local filename=$1
-    echo -e "${YELLOW}Installing Blueprint: $filename...${NC}"
-    cp "temp_ext/$filename" .
+    
+    if [ -f "temp_ext/$filename" ]; then
+        echo -e "${YELLOW}Installing: $filename...${NC}"
+        cp "temp_ext/$filename" .
+    else
+        echo -e "${RED}Error: File '$filename' listed in 'ex' but not found in folder!${NC}"
+    fi
 }
 
 # Logic to handle Input Cases
 if [[ "$user_input" == "all" ]]; then
-    # CASE 3: Install ALL
-    echo -e "${GREEN}Installing ALL extensions...${NC}"
+    # CASE 3: Install ALL from list
+    echo -e "${GREEN}Installing ALL extensions from list...${NC}"
     for file in "${files[@]}"; do
         install_file "$file"
     done
