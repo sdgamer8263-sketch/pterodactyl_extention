@@ -38,8 +38,8 @@ cat <<'EOF'
 ██████╔╝██████╔╝╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
 ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 EOF
-echo -e "${GREEN}      PTERODACTYL EXTRA BLUEPRINT EXTENTION INSTALLER (WITHOUT SFTP) ${NC}"
-echo "======================================="
+echo -e "${GREEN}      PTERODACTYL EXTRA BLUEPRINT EXTENTIONS INSTALLER (WITHOUT SFTP) ${NC}"
+echo "======================================================================================"
 echo
 }
 
@@ -68,7 +68,7 @@ echo -e "${YELLOW}Downloading latest extension files...${NC}"
 git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1.git temp_ext
 
 # =======================================================
-# SELECTION MENU (FROM 'ex' FILE LIST)
+#                SELECTION MENU 
 # =======================================================
 
 cd temp_ext
