@@ -3,25 +3,34 @@
 #   TOOL      : PTERODACTYL EXTRA BLUEPRINT EXTENTIONS INSTALLER
 # ======================================================================
 
-# ---------- COLORS ----------
+# ---------- COLORS & STYLES ----------
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+WHITE='\033[1;37m'
+BOLD='\033[1m'
 NC='\033[0m'
+
+# ---------- ICONS ----------
+TICK="${GREEN}[✔]${NC}"
+CROSS="${RED}[✘]${NC}"
+INFO="${CYAN}[✦]${NC}"
+GEAR="${YELLOW}[⚙]${NC}"
 
 # ---------- OS DETECTION (UBUNTU + DEBIAN) ----------
 detect_os() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release
         if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
-            echo -e "${GREEN}Detected OS: $NAME ($ID)${NC}"
+            echo -e "${TICK} Detected OS: ${WHITE}$NAME ($ID)${NC}"
         else
-            echo -e "${RED}Error: Your OS is $ID. This script is only for Ubuntu or Debian!${NC}"
+            echo -e "${CROSS} Error: Your OS is $ID. This script is only for Ubuntu or Debian!"
             exit 1
         fi
     else
-        echo -e "${RED}Error: OS detection failed.${NC}"
+        echo -e "${CROSS} Error: OS detection failed."
         exit 1
     fi
 }
@@ -29,7 +38,7 @@ detect_os() {
 # ---------- BANNER ----------
 banner() {
 clear
-echo -e "${CYAN}"
+echo -e "${CYAN}${BOLD}"
 cat <<'EOF'
  ██████╗██████╗  ██████╗  █████╗ ███╗   ███╗███████╗██████╗ 
 ██╔════╝██╔══██╗██╔════╝ ██╔══██╗████╗ ████║██╔════╝██╔══██╗
@@ -38,8 +47,8 @@ cat <<'EOF'
 ██████╔╝██████╔╝╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
 ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 EOF
-echo -e "${GREEN}      PTERODACTYL EXTRA BLUEPRINT EXTENTION INSTALLER (WITHOUT SFTP) ${NC}"
-echo "======================================="
+echo -e "${NC}${MAGENTA}  ✦ PTERODACTYL EXTRA BLUEPRINT EXTENTION INSTALLER ✦ ${NC}"
+echo -e "${WHITE}  ─────────────────────────────────────────────────── ${NC}"
 echo
 }
 
@@ -47,25 +56,28 @@ echo
 detect_os
 banner
 
-echo -e "${YELLOW}Starting Pterodactyl Extension Installation...${NC}"
+echo -e "${INFO} Starting Pterodactyl Extension Installation...\n"
 
 # Move to directory
-cd /var/www/pterodactyl || { echo -e "${RED}Pterodactyl directory not found!${NC}"; exit 1; }
+cd /var/www/pterodactyl || { echo -e "${CROSS} Pterodactyl directory not found!"; exit 1; }
 
 # Update and install dependencies
-apt update -y && apt install git unzip -y
+echo -e "${GEAR} Checking and installing dependencies (git, unzip)..."
+apt update -y > /dev/null 2>&1 && apt install git unzip -y > /dev/null 2>&1
+echo -e "${TICK} Dependencies installed!"
 
 # -------------------------------------------------------
 # CLEANUP OLD FILES
 # -------------------------------------------------------
 if [ -d "temp_ext" ]; then
-    echo -e "${YELLOW}Cleaning up old temp files...${NC}"
+    echo -e "${GEAR} Cleaning up old temp files..."
     rm -rf temp_ext
 fi
 
 # Clone NEW repository
-echo -e "${YELLOW}Downloading latest extension files from 'pterodactyl_extention1'...${NC}"
-git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1.git temp_ext
+echo -e "${GEAR} Downloading latest extension files..."
+git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1.git temp_ext > /dev/null 2>&1
+echo -e "${TICK} Download complete!\n"
 
 # =======================================================
 # SELECTION MENU (INSIDE 'ex' FOLDER)
@@ -73,7 +85,7 @@ git clone https://github.com/sdgamer8263-sketch/pterodactyl_extention1.git temp_
 
 # Check if 'ex' folder exists
 if [ ! -d "temp_ext/ex" ]; then
-    echo -e "${RED}Error: 'ex' folder not found in repository!${NC}"
+    echo -e "${CROSS} Error: 'ex' folder not found in repository!"
     rm -rf temp_ext
     exit 1
 fi
@@ -88,46 +100,59 @@ shopt -u nullglob
 
 # Check if list is empty
 if [ ${#files[@]} -eq 0 ]; then
-    echo -e "${RED}No .blueprint files found inside 'ex' folder!${NC}"
+    echo -e "${CROSS} No .blueprint files found inside 'ex' folder!"
     cd ../..
     rm -rf temp_ext
     exit 1
 fi
 
-echo -e "\n${CYAN}Available Extensions (in 'ex' folder):${NC}"
+# ---------- NEW POLISHED GRID MENU ----------
+echo -e "${CYAN}╭────────────────────────────────────────────────────────────────────────╮${NC}"
+echo -e "${CYAN}│${NC}  ${BOLD}${YELLOW}✨ Blueprint Extentions Menu (V26.1) ✨${NC}                               ${CYAN}│${NC}"
+echo -e "${CYAN}├────────────────────────────────────────────────────────────────────────┤${NC}"
+
 i=1
 for file in "${files[@]}"; do
-    echo -e "${GREEN}[$i]${NC} $file"
+    # Formats to perfectly fit in the box and look clean
+    printf "  ${GREEN}[%02d]${NC} ${WHITE}%-18s${NC}" "$i" "${file:0:18}"
+    
+    if (( i % 3 == 0 )); then
+        echo ""
+    fi
     ((i++))
 done
 
-echo -e "\n${YELLOW}Select installation mode:${NC}"
-echo -e " - ${GREEN}Single ID${NC} (e.g., 4)"
-echo -e " - ${GREEN}Multiple IDs${NC} (e.g., 3,5,8)"
-echo -e " - ${GREEN}All Files${NC} (type 'all')"
-echo -n "Enter your choice: "
+# Check if the last row needs a new line
+if (( (i - 1) % 3 != 0 )); then
+    echo ""
+fi
+echo -e "${CYAN}╰────────────────────────────────────────────────────────────────────────╯${NC}\n"
+
+echo -e "${WHITE}${BOLD}📌 How to install:${NC}"
+echo -e " 🔸 ${CYAN}Single ID${NC}    : type ${GREEN}4${NC}"
+echo -e " 🔸 ${CYAN}Multiple IDs${NC} : type ${GREEN}3,5,8${NC}"
+echo -e " 🔸 ${CYAN}All Files${NC}    : type ${GREEN}all${NC}\n"
+echo -ne "${MAGENTA}➤ Enter your choice: ${NC}"
 read user_input
+echo ""
 
 # Function to install file
 install_file() {
     local filename=$1
-    echo -e "${YELLOW}Installing: $filename...${NC}"
-    # Copy from current directory (temp_ext/ex) to Pterodactyl root (/var/www/pterodactyl)
+    echo -e "  ${GEAR} Installing ${WHITE}$filename${NC}..."
     cp "$filename" ../../
+    echo -e "  ${TICK} ${GREEN}Success!${NC}"
 }
 
 # Logic to handle Input Cases
 if [[ "$user_input" == "all" ]]; then
-    # CASE 3: Install ALL
-    echo -e "${GREEN}Installing ALL extensions...${NC}"
+    echo -e "${INFO} Installing ALL extensions..."
     for file in "${files[@]}"; do
         install_file "$file"
     done
 else
-    # CASES 1 & 2: Single or Multiple (Comma separated)
     IFS=',' read -ra ADDR <<< "$user_input"
     for index in "${ADDR[@]}"; do
-        # Clean whitespace
         index=$(echo $index | xargs)
         
         if [[ "$index" =~ ^[0-9]+$ ]]; then
@@ -137,10 +162,10 @@ else
                 file="${files[$real_index]}"
                 install_file "$file"
             else
-                echo -e "${RED}Skipping invalid ID: $index${NC}"
+                echo -e "  ${CROSS} Skipping invalid ID: $index"
             fi
         else
-            echo -e "${RED}Invalid input detected: $index${NC}"
+            echo -e "  ${CROSS} Invalid input detected: $index"
         fi
     done
 fi
@@ -148,26 +173,27 @@ fi
 # Go back to root and cleanup
 cd ../..
 rm -rf temp_ext
+echo ""
 
 # =======================================================
 # FINALIZATION
 # =======================================================
 
 # Permissions
+echo -e "${GEAR} Setting permissions..."
 chown -R www-data:www-data /var/www/pterodactyl
 chmod -R 755 /var/www/pterodactyl
 
 # Optimization
-echo -e "${YELLOW}Applying changes...${NC}"
-php artisan migrate --force
-php artisan optimize:clear
+echo -e "${GEAR} Applying changes & optimizing..."
+php artisan migrate --force > /dev/null 2>&1
+php artisan optimize:clear > /dev/null 2>&1
 systemctl restart nginx
 
-echo -e "${GREEN}Pterodactyl extension complete!${NC}"
+echo -e "${TICK} Pterodactyl extension backend ready!\n"
 
 # Running the blueprint addon installer
-echo -e "${CYAN}Running Blueprint Addon Installer...${NC}"
+echo -e "${INFO} Running Blueprint Addon Installer..."
 yes | bash <(curl -fsSL https://raw.githubusercontent.com/sdgamer8263-sketch/pterodactyl_extention/main/addon-installer.sh)
 
-echo -e "\n${GREEN}Installation complete! Ab flex karo 😎${NC}"
-
+echo -e "\n${TICK} ${BOLD}${GREEN}Installation complete! Ab flex karo 😎${NC}"
