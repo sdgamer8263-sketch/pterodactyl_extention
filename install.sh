@@ -105,7 +105,7 @@ cd temp_ext || exit 1
 
 # Fetch both .blueprint and .zip files
 shopt -s nullglob
-filepaths=( ex/*.blueprint Txr/*.zip )
+filepaths=( ex/*.blueprint Tr/*.zip )
 shopt -u nullglob
 
 # Check if list is empty
