@@ -4,30 +4,26 @@
 #               SDGAMER SCRIPT
 # ==========================================
 
-# Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 echo -e "${GREEN}[SDGAMER]${NC} Starting automatic download and installation..."
 
-# Step 1: Navigate to the Pterodactyl directory
 cd /var/www/pterodactyl || { echo -e "${RED}[SDGAMER] Error: /var/www/pterodactyl directory not found!${NC}"; exit 1; }
 
-# Step 2: Download the file and save it in ALL LOWERCASE
+# Download the updated lowercase file from your GitHub
 echo -e "${GREEN}[SDGAMER]${NC} Downloading shootingstars.blueprint..."
-# Note: Fetching from the original URL but saving as lowercase 'shootingstars.blueprint'
-curl -sSL -o shootingstars.blueprint https://raw.githubusercontent.com/sdgamer8263-sketch/pterodactyl_extention/main/ShootingStars.blueprint
+curl -sSL -o shootingstars.blueprint https://raw.githubusercontent.com/sdgamer8263-sketch/pterodactyl_extention/main/shootingstars.blueprint
 
-# Step 3: Verify download and install using the lowercase identifier
 if [ -f "shootingstars.blueprint" ]; then
     echo -e "${GREEN}[SDGAMER]${NC} File downloaded successfully! Running Blueprint setup..."
     
-    # Run standard Blueprint installation command with lowercase identifier
+    # Install command
     blueprint -install shootingstars
     
     echo -e "${GREEN}[SDGAMER]${NC} shootingstars setup and installation completed successfully!"
 else
-    echo -e "${RED}[SDGAMER] Error: Failed to download shootingstars.blueprint. Please check the URL or your internet connection.${NC}"
+    echo -e "${RED}[SDGAMER] Error: Failed to download. Make sure you uploaded the file as 'shootingstars.blueprint' to GitHub.${NC}"
     exit 1
 fi
