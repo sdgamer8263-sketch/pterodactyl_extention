@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# ==========================================
+#               SDGAMER SCRIPT
+# ==========================================
+
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}[SDGAMER]${NC} Starting automatic download and installation..."
+
+# Step 1: Navigate to the Pterodactyl directory
+cd /var/www/pterodactyl || { echo -e "${RED}[SDGAMER] Error: /var/www/pterodactyl directory not found!${NC}"; exit 1; }
+
+# Step 2: Download the ShootingStars.blueprint file from your GitHub
+echo -e "${GREEN}[SDGAMER]${NC} Downloading ShootingStars.blueprint..."
+curl -sSL -o ShootingStars.blueprint https://raw.githubusercontent.com/sdgamer8263-sketch/pterodactyl_extention/main/ShootingStars.blueprint
+
+# Step 3: Verify download and install
+if [ -f "ShootingStars.blueprint" ]; then
+    echo -e "${GREEN}[SDGAMER]${NC} File downloaded successfully! Running Blueprint setup..."
+    
+    # Run standard Blueprint installation command
+    blueprint -install ShootingStars
+    
+    echo -e "${GREEN}[SDGAMER]${NC} ShootingStars setup and installation completed successfully!"
+else
+    echo -e "${RED}[SDGAMER] Error: Failed to download ShootingStars.blueprint. Please check the URL or your internet connection.${NC}"
+    exit 1
+fi
