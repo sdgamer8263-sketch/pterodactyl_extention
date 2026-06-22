@@ -1,67 +1,70 @@
 #!/bin/bash
 
-# Clear the terminal for a clean start
-clear
+# Exit immediately if a command exits with a non-zero status
+set -e 
 
-echo -e "\e[36m========================================\e[0m"
-echo -e "\e[1;36m       🚀 Hyper Utility Installer       \e[0m"
-echo -e "\e[36m========================================\e[0m"
+# Colors for better output visibility
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# ==========================================
+# SDGAMER BANNER
+# ==========================================
+echo -e "${CYAN}"
+echo "  ____  ____   ____    _    __  __ _____ ____  "
+echo " / ___||  _ \ / ___|  / \  |  \/  | ____|  _ \ "
+echo " \___ \| | | | |  _  / _ \ | |\/| |  _| | |_) |"
+echo "  ___) | |_| | |_| |/ ___ \| |  | | |___|  _ < "
+echo " |____/|____/ \____/_/   \_\_|  |_|_____|_| \_\\"
+echo -e "${NC}"
+
+echo -e "${GREEN}=======================================================${NC}"
+echo -e "${GREEN}        Hyper Utility - Secure Installer Script        ${NC}"
+echo -e "${GREEN}=======================================================${NC}"
+echo -e "${YELLOW}⚠️ WARNING: Please run this utility as the 'root' user.${NC}"
+sleep 1
+
+# ==========================================
+# SECURITY: SCRIPT LICENSE KEY CHECK
+# ==========================================
+# The actual key (ai9cU0$pJu4cY_T) is encoded in Hex format to keep it hidden.
+_SECRET="\x61\x69\x39\x63\x55\x30\x24\x70\x4a\x75\x34\x63\x59\x5f\x54"
+DECODED_SECRET=$(printf "%b" "$_SECRET")
+
+echo -e "\n${YELLOW}🔒 SECURITY CHECK: This script requires a valid license key to run.${NC}"
+# Use -s to hide the input characters on the screen like a password
+read -s -p "Enter your License Key: " USER_INPUT_KEY
 echo ""
 
-# Prompt for the license key. The '-s' flag hides the input as they type.
-read -s -p "🔑 Enter License Key: " USER_KEY
-echo ""
-
-# The actual license key is hidden in the code using ROT13 encryption
-# so nobody can steal it just by reading your GitHub file.
-HIDDEN_KEY='nv9pH0$cWh4cp_G'
-EXPECTED_KEY=$(echo "$HIDDEN_KEY" | tr 'a-zA-Z' 'n-za-mN-ZA-M')
-
-# Check if the license key matches
-if [ "$USER_KEY" != "$EXPECTED_KEY" ]; then
-    echo ""
-    echo -e "\e[31m❌ Invalid License Key! Access Denied.\e[0m"
+if [ "$USER_INPUT_KEY" != "$DECODED_SECRET" ]; then
+    echo -e "${RED}❌ ERROR: Invalid License Key! Access Denied.${NC}"
+    echo -e "${CYAN}Please contact SDGAMER to get a valid key.${NC}"
     exit 1
+else
+    echo -e "${GREEN}✅ License Verified! Starting Hyper Utility Installation...${NC}"
+    sleep 2
 fi
 
-echo -e "\e[32m✅ License verified successfully!\e[0m"
-echo ""
+# ==========================================
+# HYPER UTILITY DOWNLOADING & EXECUTION
+# ==========================================
+echo -e "${CYAN}-> Checking required packages...${NC}"
+apt-get update -y > /dev/null 2>&1
+apt-get install -y wget curl > /dev/null 2>&1
 
-# Define the loading animation
-spin() {
-    local pid=$1
-    local delay=0.1
-    local spinner=( '⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏' )
+echo -e "${CYAN}-> Downloading Hyper Utility...${NC}"
+wget -q --show-progress https://hyper-r2.dgenx.net/hyperv1/hyper-utility -O hyper-utility
 
-    # Keep spinning as long as the background process is running
-    while ps -p $pid > /dev/null 2>&1; do
-        for i in "${spinner[@]}"; do
-            echo -ne "\r\e[33m[$i]\e[0m Installing Hyper Utility behind the scenes..."
-            sleep $delay
-        done
-    done
-    # Clear the line when done
-    echo -ne "\r\e[K"
-}
+echo -e "${CYAN}-> Making the file executable...${NC}"
+chmod +x hyper-utility
 
-# Start the actual installation silently in the background
-(
-    # Download the utility and discard all output
-    wget -qO hyper-utility https://hyper-r2.dgenx.net/hyperv1/hyper-utility > /dev/null 2>&1
-    
-    # Make it executable and discard all output
-    chmod +x hyper-utility > /dev/null 2>&1
-    
-    # Brief sleep to ensure the animation plays smoothly
-    sleep 4
-) &
+echo -e "${GREEN}=======================================================${NC}"
+echo -e "${GREEN}  Download Complete! 🎉 Launching Hyper Utility...     ${NC}"
+echo -e "${GREEN}=======================================================${NC}"
+sleep 2
 
-# Run the animation function, tracking the background installation process
-spin $!
-
-# Final success message
-echo -e "\r\e[32m🎉 Installation Completed Successfully!\e[0m"
-echo ""
-echo -e "You can now launch it by running: \e[1;36m./hyper-utility\e[0m"
-echo ""
-
+# Launch the interactive menu
+./hyper-utility
